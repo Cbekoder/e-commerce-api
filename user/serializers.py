@@ -74,7 +74,12 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
 class ProfileUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'email', 'phone', 'address']
+        fields = ['first_name', 'last_name', 'email', 'phone', 'address', 'password']
+
+    def __init__(self, *args, **kwargs):
+        super(ProfileUpdateSerializer, self).__init__(*args, **kwargs)
+        self.fields['password'].required = False
+        self.fields['address'].required = False
 
     def validate_email(self, value):
         """
@@ -93,6 +98,14 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
         if User.objects.exclude(pk=user.pk).filter(phone=value).exists():
             raise serializers.ValidationError("Ushbu telefon raqami allaqachon ishlatilmoqda.")
         return value
+
+    def update(self, instance, validated_data):
+        password = validated_data.pop('password', None)
+        instance = super().update(instance, validated_data)
+        if password:
+            instance.set_password(password)
+            instance.save()
+        return instance
 
 
 class ProfileSerializer(serializers.ModelSerializer):
