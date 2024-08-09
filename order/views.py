@@ -55,16 +55,29 @@ class AddToCartAPIView(APIView):
 class CartItemDeleteView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def delete(self, request):
-        # Get product_id from query parameters
-        product_id = request.query_params.get('product_id')
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                'cart_item_id',
+                openapi.IN_QUERY,
+                description="O'chiriladigan savadagi mahsulot ID raqami",
+                type=openapi.TYPE_INTEGER,
+                required=True
+            )
+        ],
+        responses={
+            204: openapi.Response("Mahsulot savatdan o'chirildi"),
+            404: openapi.Response("Mahsulot sizning savat ro'yxatingizda topilmadi yoki mavjud emas"),
+            400: openapi.Response("Notog'ri so'rov")
+        }
+    )
 
+    def delete(self, request):
+        cart_item_id = request.query_params.get('cart_item_id')
         try:
-            # Ensure the cart item belongs to the authenticated user
-            cart_item = CartItem.objects.get(product_id=product_id, user=request.user)
+            cart_item = CartItem.objects.get(pk=cart_item_id, user=request.user)
         except CartItem.DoesNotExist:
             return Response({"error": "CartItem not found"}, status=status.HTTP_404_NOT_FOUND)
-
         cart_item.delete()
         return Response({"message": "CartItem deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
 
