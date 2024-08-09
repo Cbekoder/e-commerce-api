@@ -8,9 +8,11 @@ from drf_yasg import openapi
 from .serializers import *
 from .models import *
 
+
 class CategoriesAPIView(ListAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+
 
 class ProductsListAPIView(APIView):
     @swagger_auto_schema(
@@ -35,8 +37,15 @@ class ProductsListAPIView(APIView):
 
         products = Product.objects.filter(is_deleted=False)
         serializer = ProductSerializer(products, many=True)
+        products_data = serializer.data
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        if request.user.is_authenticated:
+            wishlist_product_ids = set(Wishlist.objects.filter(user=request.user).values_list('product_id', flat=True))
+            for product in products_data:
+                product['is_liked'] = product['id'] in wishlist_product_ids
+
+        return Response(products_data, status=status.HTTP_200_OK)
+
 
 class ProductDetailView(APIView):
     @swagger_auto_schema(
@@ -64,4 +73,3 @@ class ProductDetailView(APIView):
 
         serializer = ProductDetailSerializer(product)
         return Response(serializer.data, status=status.HTTP_200_OK)
-

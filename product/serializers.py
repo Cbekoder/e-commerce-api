@@ -24,28 +24,16 @@ class ProductPropertySerializer(ModelSerializer):
 
 class ProductSerializer(ModelSerializer):
     pictures = SerializerMethodField()
-    is_liked = SerializerMethodField()
 
     class Meta:
         model = Product
-        fields = ['id', 'title', 'price', 'discount_percent', 'discount_price', 'review_quantity', 'stars', 'is_liked',
-                  'pictures']
+        fields = ['id', 'title', 'price', 'discount_percent', 'discount_price', 'review_quantity', 'stars', 'pictures']
 
     def get_pictures(self, obj):
         pictures = obj.productpictures_set.all()
         sorted_pictures = sorted(pictures, key=lambda x: not x.as_main)
         return [picture.file.url for picture in sorted_pictures]
 
-    def get_is_liked(self, obj):
-        request = self.context.get('request', None)
-        if request and hasattr(request, 'user'):
-            return Wishlist.objects.filter(user=request.user, product=obj).exists()
-        return False
-
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        representation['is_liked'] = self.get_is_liked(instance)
-        return representation
 
 
 class ProductDetailSerializer(ModelSerializer):
