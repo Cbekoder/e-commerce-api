@@ -5,6 +5,8 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+
+from order.models import CartItem
 from .serializers import *
 from .models import *
 
@@ -41,8 +43,10 @@ class ProductsListAPIView(APIView):
 
         if request.user.is_authenticated:
             wishlist_product_ids = set(Wishlist.objects.filter(user=request.user).values_list('product_id', flat=True))
+            cart_product_ids = set(CartItem.objects.filter(user=request.user).values_list('product_id', flat=True))
             for product in products_data:
                 product['is_liked'] = product['id'] in wishlist_product_ids
+                product['in_cart'] = product['id'] in cart_product_ids
 
         return Response(products_data, status=status.HTTP_200_OK)
 
