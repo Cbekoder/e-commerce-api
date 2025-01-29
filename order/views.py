@@ -106,6 +106,8 @@ class CartItemsAPIView(APIView):
 
             # Serialize product data with nested fields (pictures, properties)
             product_data = CartItemSerializer(product).data
+            product_data['id'] = cart_item.pk
+            product_data['product_id'] = product.id
             product_data['quantity'] = cart_item.quantity
             product_data['subtotal'] = subtotal
 
