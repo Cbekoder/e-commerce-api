@@ -23,11 +23,12 @@ class ProductPropertySerializer(ModelSerializer):
 
 
 class ProductSerializer(ModelSerializer):
+    category = CategorySerializer()
     pictures = SerializerMethodField()
 
     class Meta:
         model = Product
-        fields = ['id', 'title', 'price', 'discount_percent', 'discount_price', 'review_quantity', 'stars', 'pictures']
+        fields = ['id', 'title', 'price', 'discount_percent', 'discount_price', 'review_quantity', 'stars', 'category', 'pictures']
 
     def get_pictures(self, obj):
         pictures = obj.productpictures_set.all()
@@ -37,6 +38,7 @@ class ProductSerializer(ModelSerializer):
 
 
 class ProductDetailSerializer(ModelSerializer):
+    category = CategorySerializer()
     pictures = SerializerMethodField()
     properties = SerializerMethodField()
 
