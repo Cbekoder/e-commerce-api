@@ -6,6 +6,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from rest_framework import status
+
+from product.serializers import ProductPicturesSerializer
 from .serializers import AddToCartSerializer, CartItemPropertySerializer, CartItemSerializer, OrderSerializer, \
     OrderRetrieveSerializer, OrderListSerializer
 from .models import CartItemProperty, CartItem, Coupon, Order
@@ -109,6 +111,8 @@ class CartItemsAPIView(APIView):
             product_data['id'] = cart_item.pk
             product_data['product_id'] = product.id
             product_data['quantity'] = cart_item.quantity
+            product_data['pictures'] = ProductPicturesSerializer(product.productpictures_set, many=True).data
+            product_data['properties'] = CartItemPropertySerializer(CartItemProperty.objects.filter(cart_item=cart_item.pk), many=True).data
             product_data['subtotal'] = subtotal
 
             cart_items_data.append(product_data)
